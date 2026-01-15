@@ -1,0 +1,199 @@
+{
+  "name": "fluxo_n8n",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "id": "a32a85b3-ffbe-4a9b-9481-d41794934057",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "tableId": "users"
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        288,
+        0
+      ],
+      "id": "c69558de-cf55-4255-8863-3cce5792d1a0",
+      "name": "Busca os usuarios",
+      "credentials": {
+        "supabaseApi": {
+          "id": "IVi77zh7p7iBSZDB",
+          "name": "Supabase account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "aba5cd0f-4fd4-4aa1-9333-ab46186cf0e0",
+              "leftValue": "={{ $json.backlog }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        496,
+        0
+      ],
+      "id": "71368b00-798d-4831-bf89-0828daa02bef",
+      "name": "Verifica se o backlog foi preenchido"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4O-MINI"
+        },
+        "responses": {
+          "values": [
+            {
+              "content": "Atue como um Especialista em QA. Gere um backlog de testes contendo exatamente 3 tarefas prioritárias para a fase de validação de um projeto de TCC. A sua resposta deve conter apenas o backlog em formato de lista, sem qualquer texto introdutório, saudação ou explicações adicionais."
+            }
+          ]
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 2.1,
+      "position": [
+        736,
+        16
+      ],
+      "id": "cab5f9c0-178c-41de-a195-30ba1e715661",
+      "name": "Gera o campo backlog automaticamente",
+      "credentials": {
+        "openAiApi": {
+          "id": "aHTZbjCY6P7tU2Af",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "tableId": "users",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "id",
+              "condition": "eq",
+              "keyValue": "={{ $('Busca os usuarios').item.json.id }}"
+            }
+          ]
+        },
+        "fieldsUi": {
+          "fieldValues": [
+            {
+              "fieldId": "backlog",
+              "fieldValue": "={{ $json.output[0].content[0].text }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        16
+      ],
+      "id": "62e802ce-a5a8-4032-bef0-19ebc24cdb7e",
+      "name": "Atualiza o campo backlog no supabase",
+      "credentials": {
+        "supabaseApi": {
+          "id": "IVi77zh7p7iBSZDB",
+          "name": "Supabase account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Busca os usuarios",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Busca os usuarios": {
+      "main": [
+        [
+          {
+            "node": "Verifica se o backlog foi preenchido",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Verifica se o backlog foi preenchido": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Gera o campo backlog automaticamente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gera o campo backlog automaticamente": {
+      "main": [
+        [
+          {
+            "node": "Atualiza o campo backlog no supabase",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "04ba0882-3bc8-4847-b070-dd18084c1072",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "33738330930e3881dd5571eca013f36ddf8aab20e4ea5c1f2ebaf4a2b4668ac6"
+  },
+  "id": "qaODwOw0yFBoZyLz",
+  "tags": []
+}
