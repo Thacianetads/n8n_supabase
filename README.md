@@ -1,4 +1,6 @@
-CREATE TABLE teste (
+
+
+CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     phone NUMERIC,
     email TEXT,
